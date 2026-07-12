@@ -1,0 +1,39 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_USER: ${DATABASE_USER}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: .
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      NODE_ENV: production
+    env_file:
+      - .env
+    command: >
+      sh -c "node ./node_modules/typeorm/cli.js migration:run -d build/database/data-source.js
+      && node build/database/seeds/seed.js
+      && node build/server.js"
+    ports:
+      - "3001:3001"
+
+volumes:
+  postgres_data:
+    name: tech-challenge_postgres_data_v2

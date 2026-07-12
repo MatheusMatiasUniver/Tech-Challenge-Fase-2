@@ -1,0 +1,7 @@
+process.env.DATABASE_HOST = 'localhost'
+process.env.DATABASE_NAME = 'tech_challenge'
+process.env.DATABASE_PASSWORD = 'change-me'
+process.env.DATABASE_PORT = '5432'
+process.env.DATABASE_USER = 'postgres'
+process.env.JWT_EXPIRES_IN = '1h'
+process.env.JWT_SECRET = 'replace-with-a-long-random-secret'
