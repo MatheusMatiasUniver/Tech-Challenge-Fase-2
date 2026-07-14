@@ -1,8 +1,8 @@
 import { z } from 'zod'
 
 export const createPostSchema = z.object({
-  content: z.string().trim().min(1),
   title: z.string().trim().min(1).max(255),
+  content: z.string().trim().min(1),
 })
 
 export const updatePostSchema = createPostSchema
