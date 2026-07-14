@@ -4,6 +4,7 @@ import { ZodError } from 'zod'
 import { AppError } from '../../../errors/app-error'
 import {
   createPostSchema,
+  postIdSchema,
   searchPostsSchema,
   updatePostSchema,
 } from '../../../schemas/post.schema'
@@ -35,13 +36,7 @@ function getAuthenticatedUserId(request: Request): string {
 }
 
 function getPostId(request: Request): string {
-  const { id } = request.params
-
-  if (typeof id !== 'string') {
-    throw new AppError('Dados da requisição inválidos', 400)
-  }
-
-  return id
+  return postIdSchema.parse(request.params.id)
 }
 
 export async function createPost(

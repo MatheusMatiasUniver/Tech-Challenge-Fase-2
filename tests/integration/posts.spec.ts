@@ -22,6 +22,13 @@ describe('posts HTTP flow', () => {
     expect(response.body).toEqual({ message: 'Não autorizado' })
   })
 
+  it('rejects a malformed (non-UUID) post id with 400', async () => {
+    const response = await request(app).get('/posts/not-a-uuid')
+
+    expect(response.status).toBe(400)
+    expect(response.body).toEqual({ message: 'Dados da requisição inválidos' })
+  })
+
   it('validates the post body before repository access', async () => {
     const token = jwt.sign({ sub: 'author-id' }, env.JWT_SECRET)
     const response = await request(app)

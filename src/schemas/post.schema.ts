@@ -14,3 +14,5 @@ export const updatePostSchema = createPostSchema
 export const searchPostsSchema = z.object({
   q: z.string().trim().min(1),
 })
+
+export const postIdSchema = z.string().uuid()
