@@ -7,7 +7,7 @@ export const createPostSchema = z.object({
 
 export const updatePostSchema = createPostSchema
   .partial()
-  .refine((data) => data.content !== undefined || data.title !== undefined, {
+  .refine((data) => data.title !== undefined || data.content !== undefined, {
     message: 'Informe ao menos um campo para atualização',
   })
 

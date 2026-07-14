@@ -56,6 +56,8 @@ Convenções utilizadas:
 | `created_at` | timestamptz | Data de criação |
 | `updated_at` | timestamptz | Data da última atualização |
 
+As chaves primárias de `users` e `posts` são UUID (`gen_random_uuid()`), e não inteiros sequenciais. Essa escolha é uma decisão de segurança detalhada na seção 12.
+
 Migrations são a única forma de evoluir o schema. `synchronize` fica desabilitado para evitar alterações automáticas no banco.
 
 ## 4. Tecnologias Utilizadas
@@ -299,23 +301,15 @@ Para testar as rotas protegidas na interface:
 
 O esquema Bearer está declarado somente nas rotas que exigem autenticação. O documento é mantido em `src/docs/openapi.ts` e possui teste de integração para evitar divergência entre a API e a documentação.
 
-## 12. Decisões de Design e Desvios Conscientes da Especificação
+## 12. Decisões de Design
 
-A especificação original descreve o endpoint `POST /posts` recebendo título, conteúdo e autor no corpo da requisição e não prevê autenticação. Este projeto evoluiu sobre esse ponto de forma deliberada:
-
-- **Autenticação por JWT foi adicionada** como camada extra, protegendo as operações de escrita (`POST`, `PUT`, `DELETE`).
-- **O autor é derivado do token JWT, não do corpo da requisição.** O `authorId` do post é sempre o `sub` do usuário autenticado.
-
-O motivo do desvio é de segurança. Assim que existe autenticação, o token passa a ser a fonte de verdade da identidade. Aceitar o autor pelo corpo permitiria que um usuário criasse ou alterasse posts se passando por outro (falsificação de autoria), tornando inútil a regra de autoria que retorna `403` quando o usuário não é o dono do post. Portanto, implementar o autor pelo corpo seria um retrocesso de segurança, e não uma melhoria.
-
-O trecho da especificação ("aceitará dados como título, conteúdo e autor") é ilustrativo do modelo de dados de um post. A obrigação de autoria continua atendida: todo post tem um autor associado; apenas a fonte desse autor mudou do corpo para o token.
+- **Identificadores UUID em vez de sequenciais.** As chaves primárias de `users` e `posts` são UUID (`gen_random_uuid()`), não inteiros auto-incrementais. A escolha é de segurança e privacidade: IDs sequenciais são enumeráveis — como `GET /posts/:id` é público, um inteiro incremental permitiria percorrer todos os registros e ainda vazaria o volume de dados (quantidade de usuários e posts). O UUID não é adivinhável, reduzindo a superfície de enumeração e complementando a autenticação por JWT, cujo `sub` é o próprio `id` do usuário. O custo — 16 bytes por chave e menor localidade de índice na inserção — é desprezível na escala do projeto.
 
 ## 13. Desafios e Aprendizados
 
 - **Refatoração de OutSystems para Node.js.** O ponto de partida era uma aplicação low-code. Reconstruir o back-end em Node.js exigiu redefinir modelo de dados, contratos de API e responsabilidades de camada do zero.
 - **Arquitetura em camadas.** Manter rotas e controllers finos, com regras nos use-cases e o TypeORM isolado nos repositories, deu um custo inicial de estrutura, mas facilitou testar regras de negócio sem subir banco.
 - **Convenção de nomenclatura bilíngue.** Tabelas e timestamps em inglês, colunas de domínio em português e propriedades TypeScript em inglês mapeadas por decorators. Foi uma decisão de padronização que exigiu disciplina nas entidades e migrations para não vazar nomes de coluna para os use-cases.
-- **Migrations em vez de `synchronize`.** Desabilitar o `synchronize` e versionar o schema por migrations aproxima o projeto de um cenário de produção, ao custo de manter as migrations manualmente alinhadas às entidades.
 - **Testes sem depender de um PostgreSQL real.** A maior parte da suíte valida validação HTTP, middleware JWT e regra de autoria isolando a camada de persistência, o que mantém o CI rápido e determinístico. A cobertura ficou acima de 65%, bem além do mínimo de 20%.
 - **Observabilidade com baixa cardinalidade.** Ao instrumentar `/metrics`, foi preciso normalizar rotas dinâmicas (`/posts/<uuid>` vira `/posts/:id`) para evitar explosão de labels no Prometheus.
 - **Documentação viva.** O documento OpenAPI é mantido à mão e coberto por teste de integração, garantindo que a API e a documentação não divirjam ao longo do tempo.

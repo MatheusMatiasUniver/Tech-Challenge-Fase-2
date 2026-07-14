@@ -246,10 +246,10 @@ export const openApiDocument: OpenAPIV3.Document = {
     },
     schemas: {
       CreatePostRequest: {
-        example: { content: 'Conteúdo do post.', title: 'Meu primeiro post' },
+        example: { title: 'Meu primeiro post', content: 'Conteúdo do post.' },
         properties: {
-          content: { minLength: 1, type: 'string' },
           title: { maxLength: 255, minLength: 1, type: 'string' },
+          content: { minLength: 1, type: 'string' },
         },
         required: ['title', 'content'],
         type: 'object',
@@ -285,13 +285,13 @@ export const openApiDocument: OpenAPIV3.Document = {
       },
       Post: {
         properties: {
-          author: { $ref: '#/components/schemas/PostAuthor' },
-          authorId: { format: 'uuid', type: 'string' },
-          content: { type: 'string' },
-          createdAt: { format: 'date-time', type: 'string' },
           id: { format: 'uuid', type: 'string' },
           title: { type: 'string' },
+          content: { type: 'string' },
+          authorId: { format: 'uuid', type: 'string' },
+          createdAt: { format: 'date-time', type: 'string' },
           updatedAt: { format: 'date-time', type: 'string' },
+          author: { $ref: '#/components/schemas/PostAuthor' },
         },
         required: [
           'id',
@@ -320,8 +320,8 @@ export const openApiDocument: OpenAPIV3.Document = {
         example: { title: 'Título atualizado' },
         minProperties: 1,
         properties: {
-          content: { minLength: 1, type: 'string' },
           title: { maxLength: 255, minLength: 1, type: 'string' },
+          content: { minLength: 1, type: 'string' },
         },
         type: 'object',
       },
