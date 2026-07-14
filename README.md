@@ -100,6 +100,16 @@ Corpo do login:
 }
 ```
 
+O seed cria três usuários docentes, todos com a senha `123456`:
+
+| Nome | Email |
+|---|---|
+| Professor | `professor@exemplo.com` |
+| Professor 1 | `professor1@exemplo.com` |
+| Professor 2 | `professor2@exemplo.com` |
+
+Os dois últimos existem para demonstrar a regra de autoria: ao logar como um professor e tentar editar (`PUT /posts/:id`) ou remover (`DELETE /posts/:id`) um post criado por outro, a API responde `403`.
+
 ### Posts
 
 | Método | Rota | Autenticação | Descrição |
