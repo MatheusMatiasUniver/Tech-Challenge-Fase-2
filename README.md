@@ -67,6 +67,7 @@ Migrations sao a unica forma de evoluir o schema. `synchronize` fica desabilitad
 - bcryptjs e jsonwebtoken
 - Jest e Supertest
 - Docker e Docker Compose
+- Prometheus, Grafana e prom-client
 - GitHub Actions
 
 ## 5. Rotas e Metodos HTTP
@@ -76,6 +77,7 @@ Migrations sao a unica forma de evoluir o schema. `synchronize` fica desabilitad
 | Metodo | Rota | Autenticacao | Descricao |
 |---|---|---|---|
 | `GET` | `/health` | Nao | Verifica se a API esta ativa |
+| `GET` | `/metrics` | Nao | Expoe metricas no formato Prometheus |
 
 ### Autenticacao
 
@@ -122,14 +124,16 @@ O autor e definido pelo JWT; `authorId` nao deve ser enviado no corpo da requisi
 
 ## 6. Containers
 
-O Compose sobe dois containers separados e reproduziveis:
+O Compose sobe quatro containers separados e reproduziveis:
 
 | Servico | Porta no container | Porta no host |
 |---|---:|---:|
 | API | `3001` | `3001` |
 | PostgreSQL | `5432` | `5433` |
+| Prometheus | `9090` | `9090` |
+| Grafana | `3000` | `3002` |
 
-O servico `api` aguarda o healthcheck do PostgreSQL. Em seguida executa migrations, seed e inicia o servidor. Os dados do banco ficam no volume `tech-challenge_postgres_data_v2`.
+O servico `api` aguarda o healthcheck do PostgreSQL. Em seguida executa migrations, seed e inicia o servidor. Os dados do banco ficam no volume `tech-challenge_postgres_data_v2`. Prometheus e Grafana possuem volumes proprios para manter metricas e configuracoes entre reinicializacoes.
 
 ## 7. Testes e Cobertura
 
@@ -192,6 +196,17 @@ docker compose up --build -d
 curl http://localhost:3001/health
 ```
 
+Servicos disponiveis apos a subida:
+
+| Servico | URL |
+|---|---|
+| API healthcheck | `http://localhost:3001/health` |
+| Metricas | `http://localhost:3001/metrics` |
+| Prometheus | `http://localhost:9090` |
+| Grafana | `http://localhost:3002` |
+
+O Grafana inicia com usuario `admin` e senha `admin`. Defina `GRAFANA_ADMIN_PASSWORD` no ambiente para substituir a senha local padrao.
+
 Para parar os containers sem apagar os dados:
 
 ```bash
@@ -204,12 +219,21 @@ Para remover tambem o volume do banco Docker:
 docker compose down -v
 ```
 
-## 10. Proximos Passos
+## 10. Observabilidade
 
-### Observabilidade
+A observabilidade segue o mesmo fluxo usado como referencia no Pettech, adaptado para Express:
 
-Ainda nao implementada. Evolucoes planejadas incluem logs estruturados, metricas de latencia e erros, healthchecks mais detalhados e integracao com uma plataforma de monitoramento.
+```text
+API Express (/metrics) -> Prometheus -> Grafana
+```
 
-### Swagger
+O modulo `src/observability/metrics.ts` usa `prom-client` para expor metricas padrao do Node.js e as metricas HTTP abaixo:
 
-Ainda nao implementado. A documentacao OpenAPI pode ser adicionada para permitir exploracao interativa dos endpoints e geracao de clientes.
+- `tech_challenge_http_requests_total`: total de requisicoes por metodo, rota e status HTTP;
+- `tech_challenge_http_request_duration_seconds`: histograma de latencia por metodo, rota e status;
+- `tech_challenge_http_requests_in_progress`: requisicoes em andamento por metodo e rota.
+
+Os identificadores de recursos nao entram nos labels. Por exemplo, uma chamada a `/posts/<uuid>` e registrada como `/posts/:id`, evitando alta cardinalidade no Prometheus. O endpoint `/metrics` nao e instrumentado para que o scrape nao altere os indicadores da API.
+
+O datasource do Grafana e o dashboard `Tech Challenge API` sao provisionados automaticamente. O dashboard apresenta requisicoes por rota, erros HTTP, latencia p95, requisicoes em andamento e memoria do processo Node.js.
+

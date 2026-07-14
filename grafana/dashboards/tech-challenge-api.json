@@ -1,0 +1,68 @@
+{
+  "annotations": { "list": [] },
+  "editable": false,
+  "panels": [
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "reqps" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "id": 1,
+      "targets": [
+        { "expr": "sum by (method, route) (rate(tech_challenge_http_requests_total[5m]))", "legendFormat": "{{method}} {{route}}", "refId": "A" }
+      ],
+      "title": "Requisicoes por rota",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "reqps" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "id": 2,
+      "targets": [
+        { "expr": "sum by (status_code) (rate(tech_challenge_http_requests_total{status_code=~\"4..|5..\"}[5m]))", "legendFormat": "HTTP {{status_code}}", "refId": "A" }
+      ],
+      "title": "Erros HTTP",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "id": 3,
+      "targets": [
+        { "expr": "histogram_quantile(0.95, sum by (le, route) (rate(tech_challenge_http_request_duration_seconds_bucket[5m])))", "legendFormat": "p95 {{route}}", "refId": "A" }
+      ],
+      "title": "Latencia p95 por rota",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "id": 4,
+      "targets": [
+        { "expr": "sum by (route) (tech_challenge_http_requests_in_progress)", "legendFormat": "{{route}}", "refId": "A" }
+      ],
+      "title": "Requisicoes em andamento",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "bytes" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 16 },
+      "id": 5,
+      "targets": [
+        { "expr": "tech_challenge_process_resident_memory_bytes", "legendFormat": "Memoria residente", "refId": "A" }
+      ],
+      "title": "Memoria do processo Node.js",
+      "type": "timeseries"
+    }
+  ],
+  "schemaVersion": 41,
+  "tags": ["tech-challenge", "observabilidade"],
+  "templating": { "list": [] },
+  "time": { "from": "now-15m", "to": "now" },
+  "title": "Tech Challenge API",
+  "uid": "tech-challenge-api",
+  "version": 1
+}
