@@ -1,10 +1,13 @@
 name: CI
 
 on:
+  push:
   pull_request:
     branches: [main, master]
-  push:
-    branches: [main, master]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   quality:
@@ -35,3 +38,17 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  deploy:
+    name: Deploy to Render
+    needs: quality
+    runs-on: ubuntu-latest
+    # So faz deploy quando o CI passa E o evento e um push direto na main
+    # (nunca em pull requests nem em branches de feature).
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Trigger Render deploy
+        run: curl -fsSL -X POST "$RENDER_DEPLOY_HOOK_URL"
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}

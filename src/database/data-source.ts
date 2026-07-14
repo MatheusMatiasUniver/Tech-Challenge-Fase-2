@@ -15,6 +15,7 @@ export const AppDataSource = new DataSource({
   username: env.DATABASE_USER,
   password: env.DATABASE_PASSWORD,
   database: env.DATABASE_NAME,
+  ssl: env.DATABASE_SSL ? { rejectUnauthorized: false } : false,
   entities: [User, Post],
   migrations: [
     CreateUsers1710000000000,

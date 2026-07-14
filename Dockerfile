@@ -25,4 +25,4 @@ COPY --from=builder /app/build ./build
 
 EXPOSE 3001
 
-CMD ["node", "build/server.js"]
+CMD node ./node_modules/typeorm/cli.js migration:run -d build/database/data-source.js && node build/database/seeds/seed.js && node build/server.js

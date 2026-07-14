@@ -6,6 +6,10 @@ export const envSchema = z.object({
   DATABASE_NAME: z.string().min(1),
   DATABASE_PASSWORD: z.string().min(1),
   DATABASE_PORT: z.coerce.number().int().positive(),
+  DATABASE_SSL: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((value) => value === 'true'),
   DATABASE_USER: z.string().min(1),
   JWT_EXPIRES_IN: z.string().min(1).default('1h'),
   JWT_SECRET: z.string().min(32),

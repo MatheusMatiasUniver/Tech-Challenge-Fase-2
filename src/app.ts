@@ -1,6 +1,8 @@
 import 'reflect-metadata'
 import express from 'express'
+import swaggerUi from 'swagger-ui-express'
 
+import { openApiDocument } from './docs/openapi'
 import { authRoutes } from './http/controllers/auth/routes'
 import { postsRoutes } from './http/controllers/posts/routes'
 import { errorHandler } from './http/middlewares/error-handler'
@@ -20,6 +22,19 @@ app.get('/metrics', async (_request, response) => {
   response.setHeader('Content-Type', metricsRegistry.contentType)
   response.send(await metricsRegistry.metrics())
 })
+
+app.get('/docs.json', (_request, response) => {
+  response.status(200).json(openApiDocument)
+})
+
+app.use(
+  '/docs',
+  swaggerUi.serve,
+  swaggerUi.setup(openApiDocument, {
+    explorer: true,
+    swaggerOptions: { persistAuthorization: true },
+  }),
+)
 
 app.use('/auth', authRoutes)
 app.use('/posts', postsRoutes)
