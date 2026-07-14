@@ -8,7 +8,7 @@ O projeto atende ao Tech Challenge da FIAP com uma API Node.js persistida em Pos
 
 ## 2. Arquitetura do Projeto
 
-O projeto segue o padrão arquitetural adotado como referência no Pettech:
+O projeto segue um padrão arquitetural em camadas:
 
 ```text
 Route -> Controller -> Use-case -> Repository interface -> TypeORM repository -> Entity -> PostgreSQL
@@ -241,7 +241,7 @@ docker compose down -v
 
 ## 10. Observabilidade
 
-A observabilidade segue o mesmo fluxo usado como referência no Pettech, adaptado para Express:
+A observabilidade segue um fluxo adaptado para Express:
 
 ```text
 API Express (/metrics) -> Prometheus -> Grafana
@@ -313,7 +313,7 @@ O trecho da especificação ("aceitará dados como título, conteúdo e autor") 
 ## 13. Desafios e Aprendizados
 
 - **Refatoração de OutSystems para Node.js.** O ponto de partida era uma aplicação low-code. Reconstruir o back-end em Node.js exigiu redefinir modelo de dados, contratos de API e responsabilidades de camada do zero.
-- **Arquitetura em camadas (padrão Pettech).** Manter rotas e controllers finos, com regras nos use-cases e o TypeORM isolado nos repositories, deu um custo inicial de estrutura, mas facilitou testar regras de negócio sem subir banco.
+- **Arquitetura em camadas.** Manter rotas e controllers finos, com regras nos use-cases e o TypeORM isolado nos repositories, deu um custo inicial de estrutura, mas facilitou testar regras de negócio sem subir banco.
 - **Convenção de nomenclatura bilíngue.** Tabelas e timestamps em inglês, colunas de domínio em português e propriedades TypeScript em inglês mapeadas por decorators. Foi uma decisão de padronização que exigiu disciplina nas entidades e migrations para não vazar nomes de coluna para os use-cases.
 - **Migrations em vez de `synchronize`.** Desabilitar o `synchronize` e versionar o schema por migrations aproxima o projeto de um cenário de produção, ao custo de manter as migrations manualmente alinhadas às entidades.
 - **Testes sem depender de um PostgreSQL real.** A maior parte da suíte valida validação HTTP, middleware JWT e regra de autoria isolando a camada de persistência, o que mantém o CI rápido e determinístico. A cobertura ficou acima de 65%, bem além do mínimo de 20%.
